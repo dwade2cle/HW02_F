@@ -28,6 +28,9 @@ using namespace std;
 
 class HW02_FApp : public AppBasic {
 public:
+	/* DG I would have to double check with Brinkman but I think the usual convention
+	of stating what a method does goes down below where you write in the code for each method
+	so that you can state what @param and @return values (if any) that a method may have as well. 
 	/**
 	This is the default constructor, and must be used. It declares a NULL list
 	*/
@@ -62,12 +65,16 @@ private:
 	// seperate object type entirely. It adds an int to the end of the linked list.
 	// Right now all it does is chooses a type of shape to draw based on input.
 	void addShape(int in);
+	
 	// This displays the contents of the list, but is not so useful in a cinder application
 	void display();
-	// This gets the size of the linked lise
+	
+	// This gets the size of the linked list
 	int count();
+	
 	// This deletes a shape from the end of the list
 	void deleteShape();
+	
 	// This adds a shape to the front of the linked list based on where the front node is.
 	void addShapeFront(int in);
 
@@ -78,11 +85,11 @@ private:
 	// For animation
 	int frame_number_;
 	boost::posix_time::ptime app_start_time_;
-		// Dimensions of window
+		
+	// Dimensions of window
 	static const int appWidth = 800;
 	static const int appHeight = 600;
 	static const int surfaceSize = 1024;
-	
 	/**
 	Draws a rectangle with a border between (x1,y1) and (x2,y2) the logic assumes that the 
 	rectangle is declared within the bounds of the window
@@ -130,7 +137,9 @@ HW02_FApp::~HW02_FApp()	{
 	}
 	n = a; delete n;
 }
-
+/* DG
+@param in A shape to be added to the linked list.
+*/
  void HW02_FApp::addShape(int in)	{
 	if (n == NULL)	{
 		node *a; a = new node; 
@@ -167,6 +176,7 @@ int HW02_FApp::count()	{
 }
 
 void HW02_FApp::deleteShape()	{
+	//DG Instead of using *a, I would use more specific names
 	if(n == NULL)	return;
 	if(n->link == n) n = NULL;
 	else	{
@@ -179,36 +189,56 @@ void HW02_FApp::deleteShape()	{
 	delete a;
 	}
 }
-
+/* DG
+@param in A shape to be brought to the front of the linked list.
+*/
 void HW02_FApp::addShapeFront(int in)	{
+	// DG Instead of using *a and *b, I would use more specific names
 	node *a, *b; a = n;
 	while(a->link != n)
 		a->link;
 	b = new node; b->shape = in;
 	b->link = a; a->link = b; n = b;
 }
-
+/* DG
+@param pixels the pixels of the image
+@param x1 Starting x position of the rectangle
+@param y1 Starting y position of the rectangle
+@param x2 Ending x position of the rectangle
+@param y2 Ending y position of the rectangle
+@param fillColor the color of the rectangle
+@param borderColor the color of the border of the rectangle
+*/
 void HW02_FApp::rectangle(uint8_t* pixels, int x1, int y1, int x2, int y2, Color8u fillColor, Color8u borderColor)	{
 	
 	for (int y = y1; y < y2; y++)	{
 		for (int x = x1; x < x2; x++)	{
-			
+			// DG Since you use 3*(y*surfaceSize + x) six times throughout
+			// this method it would be at easier to just set that whole 
+			// formula to an int and plug in the int offset. 
+			int offset = 3*(y*surfaceSize + x);
 			//Border
 			if (std::abs(y - y1) < 4 || std::abs(x - x1) < 4|| std::abs(y - y2) < 4 || std::abs(x - x2) < 4)	{ 
-				pixels[3*(y*surfaceSize + x)] = borderColor.r;
-				pixels[3*(y*surfaceSize + x)+1] = borderColor.g;
-				pixels[3*(y*surfaceSize + x)+2] = borderColor.b;
+				pixels[offset] = borderColor.r;
+				pixels[offset+1] = borderColor.g;
+				pixels[offset+2] = borderColor.b;
 			}
 			//Fill
 			else	{
-				pixels[3*(y*surfaceSize + x)] = fillColor.r;
-				pixels[3*(y*surfaceSize + x)+1] = fillColor.g;
-				pixels[3*(y*surfaceSize + x)+2] = fillColor.b;
+				pixels[offset] = fillColor.r;
+				pixels[offset+1] = fillColor.g;
+				pixels[offset+2] = fillColor.b;
 			}
 		}
 	}
 }
-
+/* DG
+@param surface the surface 
+@param centerX the x coordinate for the center of the circle
+@param centerY the y coordinate for the center of the circle
+@param radius the radius of the cirle
+@param fillColor the color of the circle
+*/
 void HW02_FApp::circle(uint8_t* surface, int centerX, int centerY, int radius, Color8u fillColor)	{
 	// Square around circle
 	for (int j = centerY - radius; j < (centerY + radius); j++)	{
@@ -217,9 +247,11 @@ void HW02_FApp::circle(uint8_t* surface, int centerX, int centerY, int radius, C
 			int distX = std::abs(i - centerX);
 			int distY = std::abs(j - centerY);
 			if (std::sqrt((double)(distX*distX + distY*distY)) < radius)	{
-				surface[3*(j*surfaceSize + i) + 0] = fillColor.r;
-				surface[3*(j*surfaceSize + i) + 1] = fillColor.g;
-				surface[3*(j*surfaceSize + i) + 2] = fillColor.b;
+				//DG Use offset for same reason as explained above.
+				int offset = 3*(j*surfaceSize + i);
+				surface[offset] = fillColor.r; // Didn't need the + 0
+				surface[offset + 1] = fillColor.g;
+				surface[offset + 2] = fillColor.b;
 			}
 		}
 	}
@@ -244,12 +276,16 @@ void HW02_FApp::update()
 	// Just showing that we can add values
 	// Right now it's tough to show that we can remove them.
 	// This is vital for an effective project.
+
 	HW02_FApp a;
 	int b = 1 + 0.5*std::sin(2*3.14*.02*frame_number_);// = {0, 100, 200, 100, 150, 200, 0};
 	a.addShape(b);
 	a.display();
-	if (b == 0)
+	if (b == 0) {
 		circle(dataArray, 150, 150, 150, Color8u(150, 50, 0));
+		// DG Testing to see if the following circle will be on top of the previous one.
+		(circle(dataArray, 300, 300, 200, Color8u(100, 100, 100)); 
+	}
 	else
 		rectangle(dataArray, 150, 150, 265, 375, Color8u(0, 150, 50), Color8u(250, 150, 50));
 	frame_number_++;
